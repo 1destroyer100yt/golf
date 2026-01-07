@@ -1,21 +1,44 @@
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { ConfigurationPanel } from "@/components/scheduler/ConfigurationPanel";
+import { SimpleConfigPanel, SimpleConfig } from "@/components/scheduler/SimpleConfigPanel";
 import { ScheduleOutput } from "@/components/scheduler/ScheduleOutput";
 import { ScheduleControls } from "@/components/scheduler/ScheduleControls";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
 import {
-  parseData,
   generateOptimalSchedule,
-  EXAMPLE_CONFIG,
   SchedulerData,
   ScheduleResult,
 } from "@/lib/scheduler";
 import { Flag } from "lucide-react";
 
+const DEFAULT_CONFIG: SimpleConfig = {
+  players: [],
+  weekCount: 6,
+  aggregateWeeks: new Set(),
+  availability: {},
+  preferredPairs: new Map(),
+  forbiddenPairs: new Set(),
+};
+
+const EXAMPLE_CONFIG: SimpleConfig = {
+  players: ["Scott", "Mark", "Gary", "Greg", "Ken", "Bob", "Chris", "Dave"],
+  weekCount: 6,
+  aggregateWeeks: new Set(["2", "4", "6"]),
+  availability: {
+    "1": ["Scott", "Mark", "Gary", "Greg", "Bob", "Chris"],
+    "2": ["Scott", "Mark", "Ken", "Bob", "Dave"],
+    "3": ["Scott", "Gary", "Ken", "Bob", "Chris", "Dave"],
+    "4": ["Scott", "Mark", "Greg", "Ken", "Dave"],
+    "5": ["Scott", "Mark", "Gary", "Ken", "Bob", "Chris"],
+    "6": ["Gary", "Greg", "Ken", "Bob", "Dave"],
+  },
+  preferredPairs: new Map([["Mark|Scott", 2], ["Gary|Greg", 3]]),
+  forbiddenPairs: new Set(["Greg|Scott"]),
+};
+
 const Index = () => {
-  const [config, setConfig] = useState("");
+  const [config, setConfig] = useState<SimpleConfig>(DEFAULT_CONFIG);
   const [iterations, setIterations] = useState(2000);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -36,23 +59,48 @@ const Index = () => {
   }, []);
 
   const handleClear = useCallback(() => {
-    setConfig("");
+    setConfig(DEFAULT_CONFIG);
     setSchedule(null);
     setData(null);
     toast.info("Configuration cleared");
   }, []);
 
+  // Convert SimpleConfig to SchedulerData
+  const convertToSchedulerData = (cfg: SimpleConfig): SchedulerData => {
+    const weeks = Array.from({ length: cfg.weekCount }, (_, i) => String(i + 1));
+    
+    return {
+      players: cfg.players,
+      weeks,
+      availability: cfg.availability,
+      aggregateWeeks: cfg.aggregateWeeks,
+      preferredPairs: cfg.preferredPairs,
+      forbiddenPairs: cfg.forbiddenPairs,
+      objectives: {
+        UNIQUE_PAIRINGS: 8,
+        MINIMIZE_SITOUTS: 6,
+        PREFERRED_PAIRS: 7,
+        MAX_PAIR_REPEATS: 3,
+      },
+    };
+  };
+
   const handleGenerate = useCallback(async () => {
     if (isGenerating) return;
 
+    if (config.players.length < 2) {
+      toast.error("Add at least 2 players to generate a schedule");
+      return;
+    }
+
     try {
-      const parsedData = parseData(config);
-      setData(parsedData);
+      const schedulerData = convertToSchedulerData(config);
+      setData(schedulerData);
       setIsGenerating(true);
       setProgress(0);
 
       const result = await generateOptimalSchedule(
-        parsedData,
+        schedulerData,
         iterations,
         (p) => setProgress(p)
       );
@@ -166,8 +214,8 @@ const Index = () => {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ConfigurationPanel
-            value={config}
+          <SimpleConfigPanel
+            config={config}
             onChange={setConfig}
             onLoadExample={handleLoadExample}
             onClear={handleClear}
