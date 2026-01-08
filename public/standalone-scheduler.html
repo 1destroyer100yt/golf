@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Group Scheduler</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #22c55e;
+            --accent-secondary: #16a34a;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --border-color: #475569;
+            --radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--accent-primary), #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .subtitle { color: var(--text-secondary); font-size: 1rem; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--accent-secondary); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-outline:hover { background: var(--bg-tertiary); }
+
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        input[type="text"], input[type="number"] {
+            flex: 1;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .player-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.6;
+            font-size: 1rem;
+        }
+        .tag-remove:hover { opacity: 1; color: var(--accent-danger); }
+
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .week-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .week-input input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .aggregate-weeks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .week-chip {
+            padding: 6px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .week-chip.active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--accent-warning);
+            color: var(--accent-warning);
+        }
+
+        .availability-grid {
+            overflow-x: auto;
+        }
+
+        .availability-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .availability-table th,
+        .availability-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .availability-table th {
+            background: var(--bg-tertiary);
+            font-weight: 500;
+        }
+
+        .availability-table td {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .availability-table td.available {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .availability-table td:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .pair-section {
+            margin-bottom: 16px;
+        }
+
+        .pair-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .pair-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .pair-tag.preferred {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--accent-primary);
+        }
+
+        .pair-tag.forbidden {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--accent-danger);
+        }
+
+        select {
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .iteration-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            accent-color: var(--accent-primary);
+        }
+
+        .iteration-value {
+            color: var(--accent-primary);
+            font-weight: 600;
+            min-width: 50px;
+        }
+
+        .schedule-output {
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .week-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .week-number {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .week-badge {
+            padding: 4px 12px;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .pairing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin: 6px 0;
+            background: rgba(255,255,255,0.03);
+            border-radius: 6px;
+        }
+
+        .pair-names {
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .sitout-name {
+            color: var(--accent-danger);
+            font-style: italic;
+        }
+
+        .pair-count {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .pair-count.warning {
+            color: var(--accent-warning);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 16px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: var(--radius);
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .export-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--bg-tertiary);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), #4ade80);
+            width: 0;
+            transition: width 0.3s;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .separator {
+            height: 1px;
+            background: var(--border-color);
+            margin: 20px 0;
+        }
+
+        .scroll-area {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⛳ Golf Group Scheduler</h1>
+            <p class="subtitle">Optimize pairings for golf or any group activity</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Configuration Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">⚙️ Configuration</div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" onclick="loadExample()">📄 Example</button>
+                        <button class="btn btn-outline btn-sm" onclick="clearAll()">🗑️ Clear</button>
+                    </div>
+                </div>
+
+                <div class="scroll-area">
+                    <!-- Players Section -->
+                    <div class="section">
+                        <div class="section-title">👥 Players</div>
+                        <div class="input-row">
+                            <input type="text" id="newPlayer" placeholder="Enter player name..." onkeypress="if(event.key==='Enter')addPlayer()">
+                            <button class="btn btn-primary btn-sm" onclick="addPlayer()">+ Add</button>
+                        </div>
+                        <div class="player-tags" id="playerTags"></div>
+                    </div>
+
+                    <div class="separator"></div>
+
+                    <!-- Weeks Section -->
+                    <div class="section">
+                        <div class="section-title">📅 Weeks</div>
+                        <div class="week-selector">
+                            <div class="week-input">
+                                <span>Number of weeks:</span>
+                                <input type="number" id="weekCount" value="6" min="1" max="52" onchange="updateWeeks()">
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Aggregate weeks (click to toggle):</span>
+                            <div class="aggregate-weeks" id="aggregateWeeks"></div>
+                        </div>
+                    </div>
+
+                    <div class="separator"></div>
+
+                    <!-- Availability Section -->
+                    <div class="section">
+                        <div class="section-title">✓ Availability</div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">Click cells to toggle availability</p>
+                        <div class="availability-grid">
+                            <table class="availability-table" id="availabilityTable"></table>
+                        </div>
+                    </div>
+
+                    <div class="separator"></div>
+
+                    <!-- Pair Preferences Section -->
+                    <div class="section">
+                        <div class="section-title">💚 Preferred Pairs</div>
+                        <div class="input-row">
+                            <select id="preferred1"></select>
+                            <select id="preferred2"></select>
+                            <input type="number" id="preferredMax" value="2" min="1" max="10" style="width: 60px;" placeholder="Max">
+                            <button class="btn btn-primary btn-sm" onclick="addPreferredPair()">+ Add</button>
+                        </div>
+                        <div class="pair-list" id="preferredPairs"></div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">🚫 Forbidden Pairs</div>
+                        <div class="input-row">
+                            <select id="forbidden1"></select>
+                            <select id="forbidden2"></select>
+                            <button class="btn btn-outline btn-sm" onclick="addForbiddenPair()">+ Add</button>
+                        </div>
+                        <div class="pair-list" id="forbiddenPairs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📋 Schedule Output</div>
+                    <div class="export-btns">
+                        <button class="btn btn-outline btn-sm" onclick="copyOutput()">📋 Copy</button>
+                        <button class="btn btn-primary btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+                    </div>
+                </div>
+
+                <div class="controls-bar">
+                    <div class="iteration-control">
+                        <span>Iterations:</span>
+                        <input type="range" id="iterations" min="100" max="10000" value="2000" step="100" oninput="updateIterationDisplay()">
+                        <span class="iteration-value" id="iterationDisplay">2000</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateSchedule()">🚀 Generate Schedule</button>
+                </div>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating optimal schedule...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <div class="schedule-output" id="scheduleOutput">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <p>Configure players and weeks, then click Generate Schedule</p>
+                    </div>
+                </div>
+
+                <div id="statsSection" style="display: none;">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statUnique">0</div>
+                            <div class="stat-label">Unique Pairings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSitouts">0</div>
+                            <div class="stat-label">Total Sit-outs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statPreferred">0</div>
+                            <div class="stat-label">Preferred Pairs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statRepeats">0</div>
+                            <div class="stat-label">Pair Repeats</div>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <div class="score-label">Optimization Score</div>
+                        <div class="score-value" id="scoreValue">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let state = {
+            players: [],
+            weekCount: 6,
+            aggregateWeeks: new Set(),
+            availability: {},
+            preferredPairs: new Map(),
+            forbiddenPairs: new Set()
+        };
+
+        let currentSchedule = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateWeeks();
+            updatePlayerSelects();
+        });
+
+        // Player Management
+        function addPlayer() {
+            const input = document.getElementById('newPlayer');
+            const name = input.value.trim();
+            if (name && !state.players.includes(name)) {
+                state.players.push(name);
+                input.value = '';
+                renderPlayers();
+                updateAvailabilityGrid();
+                updatePlayerSelects();
+            }
+        }
+
+        function removePlayer(name) {
+            state.players = state.players.filter(p => p !== name);
+            // Clean up availability
+            for (let week in state.availability) {
+                state.availability[week] = state.availability[week].filter(p => p !== name);
+            }
+            renderPlayers();
+            updateAvailabilityGrid();
+            updatePlayerSelects();
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('playerTags');
+            container.innerHTML = state.players.map(p => `
+                <span class="tag">
+                    ${p}
+                    <span class="tag-remove" onclick="removePlayer('${p}')">×</span>
+                </span>
+            `).join('');
+        }
+
+        // Week Management
+        function updateWeeks() {
+            state.weekCount = parseInt(document.getElementById('weekCount').value) || 6;
+            // Clean aggregate weeks
+            state.aggregateWeeks = new Set([...state.aggregateWeeks].filter(w => parseInt(w) <= state.weekCount));
+            renderAggregateWeeks();
+            updateAvailabilityGrid();
+        }
+
+        function renderAggregateWeeks() {
+            const container = document.getElementById('aggregateWeeks');
+            let html = '';
+            for (let i = 1; i <= state.weekCount; i++) {
+                const isActive = state.aggregateWeeks.has(String(i));
+                html += `<span class="week-chip ${isActive ? 'active' : ''}" onclick="toggleAggregate(${i})">Week ${i}</span>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function toggleAggregate(week) {
+            const key = String(week);
+            if (state.aggregateWeeks.has(key)) {
+                state.aggregateWeeks.delete(key);
+            } else {
+                state.aggregateWeeks.add(key);
+            }
+            renderAggregateWeeks();
+        }
+
+        // Availability Grid
+        function updateAvailabilityGrid() {
+            const table = document.getElementById('availabilityTable');
+            if (state.players.length === 0) {
+                table.innerHTML = '<tr><td style="padding: 20px; color: var(--text-secondary);">Add players first</td></tr>';
+                return;
+            }
+
+            let html = '<tr><th>Player</th>';
+            for (let i = 1; i <= state.weekCount; i++) {
+                html += `<th>W${i}</th>`;
+            }
+            html += '</tr>';
+
+            state.players.forEach(player => {
+                html += `<tr><td style="text-align: left; font-weight: 500;">${player}</td>`;
+                for (let i = 1; i <= state.weekCount; i++) {
+                    const week = String(i);
+                    const isAvailable = state.availability[week]?.includes(player);
+                    html += `<td class="${isAvailable ? 'available' : ''}" onclick="toggleAvailability('${player}', '${week}')">${isAvailable ? '✓' : ''}</td>`;
+                }
+                html += '</tr>';
+            });
+
+            table.innerHTML = html;
+        }
+
+        function toggleAvailability(player, week) {
+            if (!state.availability[week]) {
+                state.availability[week] = [];
+            }
+            const idx = state.availability[week].indexOf(player);
+            if (idx >= 0) {
+                state.availability[week].splice(idx, 1);
+            } else {
+                state.availability[week].push(player);
+            }
+            updateAvailabilityGrid();
+        }
+
+        // Player Selects for Pairs
+        function updatePlayerSelects() {
+            const selects = ['preferred1', 'preferred2', 'forbidden1', 'forbidden2'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">Select player</option>' +
+                    state.players.map(p => `<option value="${p}">${p}</option>`).join('');
+            });
+        }
+
+        // Preferred Pairs
+        function addPreferredPair() {
+            const p1 = document.getElementById('preferred1').value;
+            const p2 = document.getElementById('preferred2').value;
+            const max = parseInt(document.getElementById('preferredMax').value) || 2;
+
+            if (p1 && p2 && p1 !== p2) {
+                const key = [p1, p2].sort().join('|');
+                state.preferredPairs.set(key, max);
+                renderPreferredPairs();
+            }
+        }
+
+        function removePreferredPair(key) {
+            state.preferredPairs.delete(key);
+            renderPreferredPairs();
+        }
+
+        function renderPreferredPairs() {
+            const container = document.getElementById('preferredPairs');
+            const pairs = [...state.preferredPairs.entries()];
+            container.innerHTML = pairs.map(([key, max]) => {
+                const [p1, p2] = key.split('|');
+                return `<span class="pair-tag preferred">
+                    ${p1} + ${p2} (max ${max})
+                    <span class="tag-remove" onclick="removePreferredPair('${key}')">×</span>
+                </span>`;
+            }).join('');
+        }
+
+        // Forbidden Pairs
+        function addForbiddenPair() {
+            const p1 = document.getElementById('forbidden1').value;
+            const p2 = document.getElementById('forbidden2').value;
+
+            if (p1 && p2 && p1 !== p2) {
+                const key = [p1, p2].sort().join('|');
+                state.forbiddenPairs.add(key);
+                renderForbiddenPairs();
+            }
+        }
+
+        function removeForbiddenPair(key) {
+            state.forbiddenPairs.delete(key);
+            renderForbiddenPairs();
+        }
+
+        function renderForbiddenPairs() {
+            const container = document.getElementById('forbiddenPairs');
+            const pairs = [...state.forbiddenPairs];
+            container.innerHTML = pairs.map(key => {
+                const [p1, p2] = key.split('|');
+                return `<span class="pair-tag forbidden">
+                    ${p1} + ${p2}
+                    <span class="tag-remove" onclick="removeForbiddenPair('${key}')">×</span>
+                </span>`;
+            }).join('');
+        }
+
+        // Iteration Display
+        function updateIterationDisplay() {
+            document.getElementById('iterationDisplay').textContent = document.getElementById('iterations').value;
+        }
+
+        // Schedule Generation
+        function buildSchedule() {
+            const schedule = {};
+            const pairCounts = new Map();
+            const sitOuts = new Map();
+
+            state.players.forEach(p => sitOuts.set(p, 0));
+
+            for (let w = 1; w <= state.weekCount; w++) {
+                const week = String(w);
+                const available = [...(state.availability[week] || [])];
+                if (available.length === 0) continue;
+
+                const pairings = [];
+                const shuffled = [...available].sort(() => Math.random() - 0.5);
+                const paired = new Set();
+
+                for (let i = 0; i < shuffled.length; i++) {
+                    if (paired.has(shuffled[i])) continue;
+
+                    let bestPartner = null;
+                    let bestScore = -Infinity;
+
+                    for (let j = i + 1; j < shuffled.length; j++) {
+                        if (paired.has(shuffled[j])) continue;
+
+                        const a = shuffled[i], b = shuffled[j];
+                        const key = [a, b].sort().join('|');
+
+                        if (state.forbiddenPairs.has(key)) continue;
+
+                        let score = 0;
+                        const count = pairCounts.get(key) || 0;
+
+                        if (count === 0) score += 10;
+
+                        const limit = state.preferredPairs.get(key);
+                        if (limit && count < limit) score += 5;
+
+                        if (count > 0) score -= count * 3;
+
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestPartner = j;
+                        }
+                    }
+
+                    if (bestPartner !== null) {
+                        const a = shuffled[i], b = shuffled[bestPartner];
+                        const key = [a, b].sort().join('|');
+                        pairings.push({ a, b });
+                        paired.add(a);
+                        paired.add(b);
+                        pairCounts.set(key, (pairCounts.get(key) || 0) + 1);
+                    }
+                }
+
+                shuffled.filter(p => !paired.has(p)).forEach(p => {
+                    pairings.push({ sitout: p });
+                    sitOuts.set(p, (sitOuts.get(p) || 0) + 1);
+                });
+
+                schedule[week] = pairings;
+            }
+
+            return { schedule, pairCounts, sitOuts };
+        }
+
+        function calculateScore(result) {
+            let score = 0;
+            const { pairCounts, sitOuts } = result;
+
+            let uniquePairs = 0;
+            pairCounts.forEach((count) => {
+                if (count === 1) { score += 16; uniquePairs++; }
+                else if (count === 2) score += 8;
+                else score -= (count - 2) * 3;
+            });
+
+            let totalSitouts = 0;
+            sitOuts.forEach(count => {
+                totalSitouts += count;
+                if (count === 0) score += 6;
+                else if (count === 1) score += 3;
+                else score -= (count - 1) * 6;
+            });
+
+            let preferredUsed = 0;
+            state.preferredPairs.forEach((limit, key) => {
+                const count = pairCounts.get(key) || 0;
+                if (count > 0 && count <= limit) {
+                    score += 7 * (limit - count + 1);
+                    preferredUsed += count;
+                } else if (count > limit) {
+                    score -= (count - limit) * 50;
+                }
+            });
+
+            state.forbiddenPairs.forEach(key => {
+                const count = pairCounts.get(key) || 0;
+                if (count > 0) score -= count * 100;
+            });
+
+            const pairRepeats = [...pairCounts.values()].reduce((a, b) => a + Math.max(0, b - 1), 0);
+
+            return {
+                score: Math.round(score),
+                stats: { uniquePairs, totalSitouts, preferredUsed, pairRepeats }
+            };
+        }
+
+        async function generateSchedule() {
+            if (state.players.length < 2) {
+                alert('Please add at least 2 players');
+                return;
+            }
+
+            const iterations = parseInt(document.getElementById('iterations').value);
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('scheduleOutput').innerHTML = '';
+            document.getElementById('statsSection').style.display = 'none';
+
+            let bestSchedule = null;
+            let bestScore = -Infinity;
+
+            const chunkSize = 100;
+            const chunks = Math.ceil(iterations / chunkSize);
+
+            for (let c = 0; c < chunks; c++) {
+                document.getElementById('progressFill').style.width = `${((c + 1) / chunks) * 100}%`;
+
+                for (let i = 0; i < chunkSize; i++) {
+                    const result = buildSchedule();
+                    const scoreResult = calculateScore(result);
+
+                    if (scoreResult.score > bestScore) {
+                        bestScore = scoreResult.score;
+                        bestSchedule = { ...result, scoreResult };
+                    }
+                }
+
+                await new Promise(r => setTimeout(r, 0));
+            }
+
+            currentSchedule = bestSchedule;
+            renderSchedule(bestSchedule);
+
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function renderSchedule(result) {
+            const output = document.getElementById('scheduleOutput');
+            let html = '';
+
+            for (let w = 1; w <= state.weekCount; w++) {
+                const week = String(w);
+                const weekData = result.schedule[week];
+                if (!weekData) continue;
+
+                const isAggregate = state.aggregateWeeks.has(week);
+
+                html += `<div class="week-card">
+                    <div class="week-header">
+                        <span class="week-number">Week ${week}</span>
+                        ${isAggregate ? '<span class="week-badge">Aggregate Week</span>' : ''}
+                    </div>`;
+
+                weekData.forEach(item => {
+                    if (item.sitout) {
+                        html += `<div class="pairing">
+                            <span class="sitout-name">${item.sitout} sits out</span>
+                            <span class="pair-count">(Total: ${result.sitOuts.get(item.sitout)})</span>
+                        </div>`;
+                    } else {
+                        const key = [item.a, item.b].sort().join('|');
+                        const count = result.pairCounts.get(key) || 0;
+                        const limit = state.preferredPairs.get(key);
+
+                        html += `<div class="pairing">
+                            <span class="pair-names">${item.a} + ${item.b}</span>
+                            <span class="pair-count ${count > 1 ? 'warning' : ''}">
+                                ${count} time${count !== 1 ? 's' : ''}${limit ? ` (max ${limit})` : ''}
+                            </span>
+                        </div>`;
+                    }
+                });
+
+                html += '</div>';
+            }
+
+            output.innerHTML = html || '<div class="empty-state"><p>No schedule generated</p></div>';
+
+            // Update stats
+            const stats = result.scoreResult.stats;
+            document.getElementById('statUnique').textContent = stats.uniquePairs;
+            document.getElementById('statSitouts').textContent = stats.totalSitouts;
+            document.getElementById('statPreferred').textContent = stats.preferredUsed;
+            document.getElementById('statRepeats').textContent = stats.pairRepeats;
+            document.getElementById('scoreValue').textContent = result.scoreResult.score;
+            document.getElementById('statsSection').style.display = 'block';
+        }
+
+        // Load Example
+        function loadExample() {
+            state.players = ['Scott', 'Mark', 'GaryS', 'Greg', 'Ken', 'Bob'];
+            state.weekCount = 6;
+            state.aggregateWeeks = new Set(['2', '4', '6']);
+            state.availability = {
+                '1': ['Scott', 'Mark', 'GaryS', 'Greg', 'Bob'],
+                '2': ['Scott', 'Mark', 'Ken', 'Bob'],
+                '3': ['Scott', 'GaryS', 'Ken', 'Bob'],
+                '4': ['Scott', 'Mark', 'Greg', 'Ken'],
+                '5': ['Scott', 'Mark', 'GaryS', 'Ken', 'Bob'],
+                '6': ['GaryS', 'Greg', 'Ken', 'Bob']
+            };
+            state.preferredPairs = new Map([['Mark|Scott', 2], ['GaryS|Greg', 3]]);
+            state.forbiddenPairs = new Set(['Greg|Scott']);
+
+            document.getElementById('weekCount').value = 6;
+            renderPlayers();
+            renderAggregateWeeks();
+            updateAvailabilityGrid();
+            updatePlayerSelects();
+            renderPreferredPairs();
+            renderForbiddenPairs();
+        }
+
+        // Clear All
+        function clearAll() {
+            state = {
+                players: [],
+                weekCount: 6,
+                aggregateWeeks: new Set(),
+                availability: {},
+                preferredPairs: new Map(),
+                forbiddenPairs: new Set()
+            };
+            currentSchedule = null;
+
+            document.getElementById('weekCount').value = 6;
+            renderPlayers();
+            renderAggregateWeeks();
+            updateAvailabilityGrid();
+            updatePlayerSelects();
+            renderPreferredPairs();
+            renderForbiddenPairs();
+            document.getElementById('scheduleOutput').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><p>Configure players and weeks, then click Generate Schedule</p></div>';
+            document.getElementById('statsSection').style.display = 'none';
+        }
+
+        // Copy Output
+        function copyOutput() {
+            if (!currentSchedule) {
+                alert('Generate a schedule first');
+                return;
+            }
+            const text = document.getElementById('scheduleOutput').innerText;
+            navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+        }
+
+        // Export CSV
+        function exportCSV() {
+            if (!currentSchedule) {
+                alert('Generate a schedule first');
+                return;
+            }
+
+            let csv = 'Week,Player1,Player2,Sitout\n';
+
+            for (let w = 1; w <= state.weekCount; w++) {
+                const week = String(w);
+                const weekData = currentSchedule.schedule[week] || [];
+                weekData.forEach(item => {
+                    if (item.sitout) {
+                        csv += `${week},,${item.sitout},Yes\n`;
+                    } else {
+                        csv += `${week},${item.a},${item.b},No\n`;
+                    }
+                });
+            }
+
+            csv += '\nStatistics\nMetric,Value\n';
+            csv += `Unique Pairings,${currentSchedule.scoreResult.stats.uniquePairs}\n`;
+            csv += `Total Sitouts,${currentSchedule.scoreResult.stats.totalSitouts}\n`;
+            csv += `Preferred Pairs Used,${currentSchedule.scoreResult.stats.preferredUsed}\n`;
+            csv += `Pairing Repeats,${currentSchedule.scoreResult.stats.pairRepeats}\n`;
+            csv += `Optimization Score,${currentSchedule.scoreResult.score}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `schedule_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                generateSchedule();
+            }
+        });
+    </script>
+</body>
+</html>
