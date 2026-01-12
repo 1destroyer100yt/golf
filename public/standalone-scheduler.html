@@ -15,6 +15,7 @@
             --accent-secondary: #16a34a;
             --accent-warning: #f59e0b;
             --accent-danger: #ef4444;
+            --accent-tournament: #8b5cf6;
             --border-color: #475569;
             --radius: 8px;
         }
@@ -191,27 +192,58 @@
             text-align: center;
         }
 
-        .aggregate-weeks {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        .week-config-grid {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 8px;
             margin-top: 12px;
+            align-items: center;
+        }
+
+        .week-config-header {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding-bottom: 4px;
+        }
+
+        .week-name-input {
+            padding: 6px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            width: 100%;
         }
 
         .week-chip {
-            padding: 8px 14px;
+            padding: 6px 12px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             transition: all 0.2s;
+            text-align: center;
         }
 
-        .week-chip.active {
+        .week-chip.aggregate {
             background: rgba(245, 158, 11, 0.2);
             border-color: var(--accent-warning);
             color: var(--accent-warning);
+        }
+
+        .week-chip.tournament {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--accent-tournament);
+            color: var(--accent-tournament);
+        }
+
+        .week-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            min-width: 50px;
         }
 
         .availability-grid {
@@ -234,6 +266,16 @@
         .availability-table th {
             background: var(--bg-tertiary);
             font-weight: 500;
+        }
+
+        .availability-table th.tournament {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-tournament);
+        }
+
+        .availability-table th.aggregate {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-warning);
         }
 
         .availability-table td {
@@ -322,75 +364,171 @@
 
         .schedule-output {
             min-height: 300px;
-            max-height: 500px;
-            overflow-y: auto;
-            padding: 16px;
+            max-height: 600px;
+            overflow: auto;
             background: var(--bg-tertiary);
             border-radius: 8px;
             margin-bottom: 20px;
         }
 
-        .week-card {
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 14px;
-            border-left: 4px solid var(--accent-primary);
-        }
-
-        .week-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .week-number {
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
-
-        .week-badge {
-            padding: 5px 12px;
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--accent-warning);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 14px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .pairing {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
-            margin: 6px 0;
-            background: rgba(255,255,255,0.03);
-            border-radius: 6px;
-        }
-
-        .pair-names {
-            color: var(--accent-primary);
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .sitout-name {
-            color: var(--accent-danger);
-            font-style: italic;
-            font-size: 0.95rem;
-        }
-
-        .pair-count {
-            color: var(--text-secondary);
+        /* Schedule Table Styles */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.85rem;
         }
 
-        .pair-count.warning {
+        .schedule-table th,
+        .schedule-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        .schedule-table th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .schedule-table tr.week-row {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .schedule-table tr.week-row:hover {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .schedule-table tr.week-row.aggregate {
+            border-left: 4px solid var(--accent-warning);
+        }
+
+        .schedule-table tr.week-row.tournament {
+            border-left: 4px solid var(--accent-tournament);
+        }
+
+        .schedule-table .week-cell {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .schedule-table .week-name {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: normal;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .schedule-table .pairings-cell {
+            color: var(--accent-primary);
+        }
+
+        .schedule-table .pairings-cell .pair {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background: rgba(34, 197, 94, 0.15);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .schedule-table .pairings-cell .pair.repeat {
+            background: rgba(245, 158, 11, 0.2);
             color: var(--accent-warning);
+        }
+
+        .schedule-table .sitouts-cell {
+            color: var(--accent-danger);
+        }
+
+        .schedule-table .sitouts-cell .sitout {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background: rgba(239, 68, 68, 0.15);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .schedule-table .badges-cell {
+            white-space: nowrap;
+        }
+
+        .week-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-right: 4px;
+        }
+
+        .week-badge.aggregate {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .week-badge.tournament {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-tournament);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        /* Sitout Summary Table */
+        .sitout-summary {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .sitout-summary h4 {
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            color: var(--accent-danger);
+        }
+
+        .sitout-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .sitout-table th,
+        .sitout-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sitout-table th {
+            background: var(--bg-secondary);
+            font-weight: 500;
+        }
+
+        .sitout-table td.count {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .sitout-table td.count.high {
+            color: var(--accent-danger);
+        }
+
+        .sitout-table td.count.medium {
+            color: var(--accent-warning);
+        }
+
+        .sitout-table td.count.low {
+            color: var(--accent-primary);
+        }
+
+        .sitout-table td.weeks {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
 
         .stats-grid {
@@ -505,6 +643,36 @@
             overflow-y: auto;
             padding-right: 8px;
         }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.aggregate {
+            background: rgba(245, 158, 11, 0.5);
+            border: 1px solid var(--accent-warning);
+        }
+
+        .legend-dot.tournament {
+            background: rgba(139, 92, 246, 0.5);
+            border: 1px solid var(--accent-tournament);
+        }
     </style>
 </head>
 <body>
@@ -540,16 +708,28 @@
 
                     <!-- Weeks Section -->
                     <div class="section">
-                        <div class="section-title">📅 Weeks</div>
+                        <div class="section-title">📅 Weeks Configuration</div>
                         <div class="week-selector">
                             <div class="week-input">
                                 <span>Number of weeks:</span>
                                 <input type="number" id="weekCount" value="6" min="1" max="52" onchange="updateWeeks()">
                             </div>
                         </div>
-                        <div style="margin-top: 12px;">
-                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Aggregate weeks (click to toggle):</span>
-                            <div class="aggregate-weeks" id="aggregateWeeks"></div>
+                        <div class="legend" style="margin-top: 12px;">
+                            <div class="legend-item">
+                                <div class="legend-dot aggregate"></div>
+                                <span>Aggregate (scoring)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot tournament"></div>
+                                <span>Tournament</span>
+                            </div>
+                        </div>
+                        <div class="week-config-grid" id="weekConfigGrid">
+                            <div class="week-config-header">Week</div>
+                            <div class="week-config-header">Place/Name</div>
+                            <div class="week-config-header">Aggr.</div>
+                            <div class="week-config-header">Tourn.</div>
                         </div>
                     </div>
 
@@ -569,6 +749,7 @@
                     <!-- Pair Preferences Section -->
                     <div class="section">
                         <div class="section-title">💚 Preferred Pairs</div>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px;">Preferred pairs are prioritized on aggregate weeks</p>
                         <div class="input-row">
                             <select id="preferred1"></select>
                             <select id="preferred2"></select>
@@ -624,6 +805,8 @@
                     </div>
                 </div>
 
+                <div id="sitoutSection" style="display: none;"></div>
+
                 <div id="statsSection" style="display: none;">
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -658,6 +841,8 @@
             players: [],
             weekCount: 6,
             aggregateWeeks: new Set(),
+            tournamentWeeks: new Set(),
+            weekNames: {},
             availability: {},
             preferredPairs: new Map(),
             forbiddenPairs: new Set()
@@ -708,20 +893,57 @@
         // Week Management
         function updateWeeks() {
             state.weekCount = parseInt(document.getElementById('weekCount').value) || 6;
-            // Clean aggregate weeks
+            // Clean aggregate and tournament weeks
             state.aggregateWeeks = new Set([...state.aggregateWeeks].filter(w => parseInt(w) <= state.weekCount));
-            renderAggregateWeeks();
+            state.tournamentWeeks = new Set([...state.tournamentWeeks].filter(w => parseInt(w) <= state.weekCount));
+            // Clean week names
+            const newWeekNames = {};
+            for (let i = 1; i <= state.weekCount; i++) {
+                if (state.weekNames[String(i)]) {
+                    newWeekNames[String(i)] = state.weekNames[String(i)];
+                }
+            }
+            state.weekNames = newWeekNames;
+            
+            renderWeekConfig();
             updateAvailabilityGrid();
         }
 
-        function renderAggregateWeeks() {
-            const container = document.getElementById('aggregateWeeks');
-            let html = '';
+        function renderWeekConfig() {
+            const container = document.getElementById('weekConfigGrid');
+            let html = `
+                <div class="week-config-header">Week</div>
+                <div class="week-config-header">Place/Name</div>
+                <div class="week-config-header">Aggr.</div>
+                <div class="week-config-header">Tourn.</div>
+            `;
+            
             for (let i = 1; i <= state.weekCount; i++) {
-                const isActive = state.aggregateWeeks.has(String(i));
-                html += `<span class="week-chip ${isActive ? 'active' : ''}" onclick="toggleAggregate(${i})">Week ${i}</span>`;
+                const weekKey = String(i);
+                const isAggregate = state.aggregateWeeks.has(weekKey);
+                const isTournament = state.tournamentWeeks.has(weekKey);
+                const weekName = state.weekNames[weekKey] || '';
+                
+                html += `
+                    <span class="week-label">Week ${i}</span>
+                    <input type="text" class="week-name-input" value="${weekName}" 
+                        placeholder="e.g., Pine Valley" 
+                        onchange="updateWeekName('${weekKey}', this.value)">
+                    <span class="week-chip ${isAggregate ? 'aggregate' : ''}" 
+                        onclick="toggleAggregate(${i})">⭐</span>
+                    <span class="week-chip ${isTournament ? 'tournament' : ''}" 
+                        onclick="toggleTournament(${i})">🏆</span>
+                `;
             }
             container.innerHTML = html;
+        }
+
+        function updateWeekName(week, name) {
+            if (name.trim()) {
+                state.weekNames[week] = name.trim();
+            } else {
+                delete state.weekNames[week];
+            }
         }
 
         function toggleAggregate(week) {
@@ -731,7 +953,19 @@
             } else {
                 state.aggregateWeeks.add(key);
             }
-            renderAggregateWeeks();
+            renderWeekConfig();
+            updateAvailabilityGrid();
+        }
+
+        function toggleTournament(week) {
+            const key = String(week);
+            if (state.tournamentWeeks.has(key)) {
+                state.tournamentWeeks.delete(key);
+            } else {
+                state.tournamentWeeks.add(key);
+            }
+            renderWeekConfig();
+            updateAvailabilityGrid();
         }
 
         // Availability Grid
@@ -744,7 +978,17 @@
 
             let html = '<tr><th>Player</th>';
             for (let i = 1; i <= state.weekCount; i++) {
-                html += `<th>W${i}</th>`;
+                const weekKey = String(i);
+                const isAggregate = state.aggregateWeeks.has(weekKey);
+                const isTournament = state.tournamentWeeks.has(weekKey);
+                let thClass = '';
+                if (isTournament) thClass = 'tournament';
+                else if (isAggregate) thClass = 'aggregate';
+                
+                const weekName = state.weekNames[weekKey];
+                const label = weekName ? `W${i}` : `W${i}`;
+                const title = weekName ? `Week ${i}: ${weekName}` : `Week ${i}`;
+                html += `<th class="${thClass}" title="${title}">${label}</th>`;
             }
             html += '</tr>';
 
@@ -853,14 +1097,19 @@
             const schedule = {};
             const pairCounts = new Map();
             const sitOuts = new Map();
+            const sitOutWeeks = new Map(); // Track which weeks each player sits out
 
-            state.players.forEach(p => sitOuts.set(p, 0));
+            state.players.forEach(p => {
+                sitOuts.set(p, 0);
+                sitOutWeeks.set(p, []);
+            });
 
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
                 const available = [...(state.availability[week] || [])];
                 if (available.length === 0) continue;
 
+                const isAggregateWeek = state.aggregateWeeks.has(week);
                 const pairings = [];
                 const shuffled = [...available].sort(() => Math.random() - 0.5);
                 const paired = new Set();
@@ -884,8 +1133,11 @@
 
                         if (count === 0) score += 10;
 
+                        // Preferred pairs get MUCH higher priority on aggregate weeks
                         const limit = state.preferredPairs.get(key);
-                        if (limit && count < limit) score += 5;
+                        if (limit && count < limit) {
+                            score += isAggregateWeek ? 25 : 5; // Higher bonus on aggregate weeks
+                        }
 
                         if (count > 0) score -= count * 3;
 
@@ -908,12 +1160,13 @@
                 shuffled.filter(p => !paired.has(p)).forEach(p => {
                     pairings.push({ sitout: p });
                     sitOuts.set(p, (sitOuts.get(p) || 0) + 1);
+                    sitOutWeeks.get(p).push(w);
                 });
 
                 schedule[week] = pairings;
             }
 
-            return { schedule, pairCounts, sitOuts };
+            return { schedule, pairCounts, sitOuts, sitOutWeeks };
         }
 
         function calculateScore(result) {
@@ -970,6 +1223,7 @@
             document.getElementById('loading').style.display = 'block';
             document.getElementById('scheduleOutput').innerHTML = '';
             document.getElementById('statsSection').style.display = 'none';
+            document.getElementById('sitoutSection').style.display = 'none';
 
             let bestSchedule = null;
             let bestScore = -Infinity;
@@ -1001,7 +1255,20 @@
 
         function renderSchedule(result) {
             const output = document.getElementById('scheduleOutput');
-            let html = '';
+            
+            // Build table output
+            let html = `
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Week</th>
+                            <th>Pairings</th>
+                            <th>Sit-outs</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
 
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
@@ -1009,37 +1276,73 @@
                 if (!weekData) continue;
 
                 const isAggregate = state.aggregateWeeks.has(week);
+                const isTournament = state.tournamentWeeks.has(week);
+                const weekName = state.weekNames[week];
+                
+                let rowClass = 'week-row';
+                if (isTournament) rowClass += ' tournament';
+                else if (isAggregate) rowClass += ' aggregate';
 
-                html += `<div class="week-card">
-                    <div class="week-header">
-                        <span class="week-number">Week ${week}</span>
-                        ${isAggregate ? '<span class="week-badge">Aggregate Week</span>' : ''}
-                    </div>`;
-
+                // Collect pairings and sitouts
+                const pairings = [];
+                const sitouts = [];
+                
                 weekData.forEach(item => {
                     if (item.sitout) {
-                        html += `<div class="pairing">
-                            <span class="sitout-name">${item.sitout} sits out</span>
-                            <span class="pair-count">(Total: ${result.sitOuts.get(item.sitout)})</span>
-                        </div>`;
+                        sitouts.push(item.sitout);
                     } else {
                         const key = [item.a, item.b].sort().join('|');
                         const count = result.pairCounts.get(key) || 0;
-                        const limit = state.preferredPairs.get(key);
-
-                        html += `<div class="pairing">
-                            <span class="pair-names">${item.a} + ${item.b}</span>
-                            <span class="pair-count ${count > 1 ? 'warning' : ''}">
-                                ${count} time${count !== 1 ? 's' : ''}${limit ? ` (max ${limit})` : ''}
-                            </span>
-                        </div>`;
+                        pairings.push({ a: item.a, b: item.b, count });
                     }
                 });
 
-                html += '</div>';
+                html += `<tr class="${rowClass}">`;
+                
+                // Week column
+                html += `<td class="week-cell">Week ${w}`;
+                if (weekName) {
+                    html += `<span class="week-name">${weekName}</span>`;
+                }
+                html += `</td>`;
+                
+                // Pairings column
+                html += `<td class="pairings-cell">`;
+                pairings.forEach(p => {
+                    const repeatClass = p.count > 1 ? 'repeat' : '';
+                    html += `<span class="pair ${repeatClass}" title="${p.count} time(s)">${p.a} + ${p.b}</span>`;
+                });
+                html += `</td>`;
+                
+                // Sitouts column
+                html += `<td class="sitouts-cell">`;
+                sitouts.forEach(s => {
+                    const totalSitouts = result.sitOuts.get(s) || 0;
+                    html += `<span class="sitout" title="Total: ${totalSitouts}">${s}</span>`;
+                });
+                if (sitouts.length === 0) {
+                    html += `<span style="color: var(--text-secondary); font-size: 0.8rem;">None</span>`;
+                }
+                html += `</td>`;
+                
+                // Type badges column
+                html += `<td class="badges-cell">`;
+                if (isTournament) {
+                    html += `<span class="week-badge tournament">🏆 Tournament</span>`;
+                }
+                if (isAggregate) {
+                    html += `<span class="week-badge aggregate">⭐ Aggregate</span>`;
+                }
+                html += `</td>`;
+                
+                html += `</tr>`;
             }
 
+            html += '</tbody></table>';
             output.innerHTML = html || '<div class="empty-state"><p>No schedule generated</p></div>';
+
+            // Render sitout summary
+            renderSitoutSummary(result);
 
             // Update stats
             const stats = result.scoreResult.stats;
@@ -1051,11 +1354,78 @@
             document.getElementById('statsSection').style.display = 'block';
         }
 
+        function renderSitoutSummary(result) {
+            const section = document.getElementById('sitoutSection');
+            
+            // Build sitout summary table
+            const sitoutData = [];
+            result.sitOuts.forEach((count, player) => {
+                if (count > 0) {
+                    const weeks = result.sitOutWeeks.get(player) || [];
+                    sitoutData.push({ player, count, weeks });
+                }
+            });
+
+            if (sitoutData.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            // Sort by count descending
+            sitoutData.sort((a, b) => b.count - a.count);
+
+            let html = `
+                <div class="sitout-summary">
+                    <h4>🪑 Sit-out Summary</h4>
+                    <table class="sitout-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Total</th>
+                                <th>Weeks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            sitoutData.forEach(({ player, count, weeks }) => {
+                let countClass = 'low';
+                if (count >= 3) countClass = 'high';
+                else if (count >= 2) countClass = 'medium';
+
+                const weekLabels = weeks.map(w => {
+                    const name = state.weekNames[String(w)];
+                    return name ? `W${w} (${name})` : `W${w}`;
+                }).join(', ');
+
+                html += `
+                    <tr>
+                        <td>${player}</td>
+                        <td class="count ${countClass}">${count}</td>
+                        <td class="weeks">${weekLabels}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            section.innerHTML = html;
+            section.style.display = 'block';
+        }
+
         // Load Example
         function loadExample() {
             state.players = ['Scott', 'Mark', 'GaryS', 'Greg', 'Ken', 'Bob'];
             state.weekCount = 6;
             state.aggregateWeeks = new Set(['2', '4', '6']);
+            state.tournamentWeeks = new Set(['4']);
+            state.weekNames = {
+                '1': 'Pine Valley',
+                '2': 'Augusta',
+                '3': 'Pebble Beach',
+                '4': 'St Andrews',
+                '5': 'Sawgrass',
+                '6': 'Royal Troon'
+            };
             state.availability = {
                 '1': ['Scott', 'Mark', 'GaryS', 'Greg', 'Bob'],
                 '2': ['Scott', 'Mark', 'Ken', 'Bob'],
@@ -1069,7 +1439,7 @@
 
             document.getElementById('weekCount').value = 6;
             renderPlayers();
-            renderAggregateWeeks();
+            renderWeekConfig();
             updateAvailabilityGrid();
             updatePlayerSelects();
             renderPreferredPairs();
@@ -1082,6 +1452,8 @@
                 players: [],
                 weekCount: 6,
                 aggregateWeeks: new Set(),
+                tournamentWeeks: new Set(),
+                weekNames: {},
                 availability: {},
                 preferredPairs: new Map(),
                 forbiddenPairs: new Set()
@@ -1090,13 +1462,14 @@
 
             document.getElementById('weekCount').value = 6;
             renderPlayers();
-            renderAggregateWeeks();
+            renderWeekConfig();
             updateAvailabilityGrid();
             updatePlayerSelects();
             renderPreferredPairs();
             renderForbiddenPairs();
             document.getElementById('scheduleOutput').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><p>Configure players and weeks, then click Generate Schedule</p></div>';
             document.getElementById('statsSection').style.display = 'none';
+            document.getElementById('sitoutSection').style.display = 'none';
         }
 
         // Copy Output
@@ -1116,19 +1489,31 @@
                 return;
             }
 
-            let csv = 'Week,Player1,Player2,Sitout\n';
+            let csv = 'Week,Week Name,Player1,Player2,Sitout,Aggregate,Tournament\n';
 
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
                 const weekData = currentSchedule.schedule[week] || [];
+                const weekName = state.weekNames[week] || '';
+                const isAggregate = state.aggregateWeeks.has(week) ? 'Yes' : 'No';
+                const isTournament = state.tournamentWeeks.has(week) ? 'Yes' : 'No';
+                
                 weekData.forEach(item => {
                     if (item.sitout) {
-                        csv += `${week},,${item.sitout},Yes\n`;
+                        csv += `${week},"${weekName}",,${item.sitout},Yes,${isAggregate},${isTournament}\n`;
                     } else {
-                        csv += `${week},${item.a},${item.b},No\n`;
+                        csv += `${week},"${weekName}",${item.a},${item.b},No,${isAggregate},${isTournament}\n`;
                     }
                 });
             }
+
+            csv += '\nSitout Summary\nPlayer,Total Sitouts,Weeks\n';
+            currentSchedule.sitOuts.forEach((count, player) => {
+                if (count > 0) {
+                    const weeks = currentSchedule.sitOutWeeks.get(player).join('; ');
+                    csv += `${player},${count},"${weeks}"\n`;
+                }
+            });
 
             csv += '\nStatistics\nMetric,Value\n';
             csv += `Unique Pairings,${currentSchedule.scoreResult.stats.uniquePairs}\n`;
