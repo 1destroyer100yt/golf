@@ -440,17 +440,41 @@
             color: var(--accent-warning);
         }
 
-        .schedule-table .sitouts-cell {
-            color: var(--accent-danger);
+        .schedule-table .singles-cell {
+            color: var(--accent-warning);
         }
 
-        .schedule-table .sitouts-cell .sitout {
+        .schedule-table .singles-cell .single {
             display: inline-block;
             padding: 4px 8px;
             margin: 2px;
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(245, 158, 11, 0.15);
             border-radius: 4px;
             font-size: 0.8rem;
+        }
+
+        .schedule-table .group-cell {
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .schedule-table .group-cell .group-pair {
+            display: block;
+            padding: 6px 10px;
+            background: rgba(34, 197, 94, 0.12);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        .schedule-table .group-cell .single-player {
+            display: block;
+            padding: 6px 10px;
+            background: rgba(245, 158, 11, 0.15);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--accent-warning);
+            font-style: italic;
         }
 
         .schedule-table .badges-cell {
@@ -477,56 +501,56 @@
             border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
-        /* Sitout Summary Table */
-        .sitout-summary {
+        /* Singles Summary Table */
+        .singles-summary {
             margin-top: 16px;
             padding: 16px;
             background: var(--bg-tertiary);
             border-radius: 8px;
         }
 
-        .sitout-summary h4 {
+        .singles-summary h4 {
             font-size: 0.9rem;
             margin-bottom: 12px;
-            color: var(--accent-danger);
+            color: var(--accent-warning);
         }
 
-        .sitout-table {
+        .singles-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
         }
 
-        .sitout-table th,
-        .sitout-table td {
+        .singles-table th,
+        .singles-table td {
             padding: 8px 12px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .sitout-table th {
+        .singles-table th {
             background: var(--bg-secondary);
             font-weight: 500;
         }
 
-        .sitout-table td.count {
+        .singles-table td.count {
             text-align: center;
             font-weight: 600;
         }
 
-        .sitout-table td.count.high {
+        .singles-table td.count.high {
             color: var(--accent-danger);
         }
 
-        .sitout-table td.count.medium {
+        .singles-table td.count.medium {
             color: var(--accent-warning);
         }
 
-        .sitout-table td.count.low {
+        .singles-table td.count.low {
             color: var(--accent-primary);
         }
 
-        .sitout-table td.weeks {
+        .singles-table td.weeks {
             font-size: 0.8rem;
             color: var(--text-secondary);
         }
@@ -814,8 +838,8 @@
                             <div class="stat-label">Unique Pairings</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="statSitouts">0</div>
-                            <div class="stat-label">Total Sit-outs</div>
+                            <div class="stat-value" id="statSingles">0</div>
+                            <div class="stat-label">Playing Alone</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="statPreferred">0</div>
@@ -1256,14 +1280,34 @@
         function renderSchedule(result) {
             const output = document.getElementById('scheduleOutput');
             
-            // Build table output
+            // Calculate max groups per week for column headers
+            let maxGroups = 0;
+            for (let w = 1; w <= state.weekCount; w++) {
+                const week = String(w);
+                const weekData = result.schedule[week] || [];
+                const pairCount = weekData.filter(item => !item.sitout).length;
+                const singleCount = weekData.filter(item => item.sitout).length;
+                // Singles can join a group, so total groups = pairs + ceil(singles/2) or singles alone
+                maxGroups = Math.max(maxGroups, pairCount + singleCount);
+            }
+            // Minimum 2 groups for display
+            maxGroups = Math.max(maxGroups, 2);
+            
+            // Build golf-standard table output
             let html = `
                 <table class="schedule-table">
                     <thead>
                         <tr>
                             <th>Week</th>
-                            <th>Pairings</th>
-                            <th>Sit-outs</th>
+            `;
+            
+            // Add group columns (golf foursome style)
+            for (let g = 1; g <= maxGroups; g++) {
+                html += `<th class="group-cell">Group ${g}</th>`;
+            }
+            
+            html += `
+                            <th>Playing Alone</th>
                             <th>Type</th>
                         </tr>
                     </thead>
@@ -1283,13 +1327,13 @@
                 if (isTournament) rowClass += ' tournament';
                 else if (isAggregate) rowClass += ' aggregate';
 
-                // Collect pairings and sitouts
+                // Collect pairings and singles
                 const pairings = [];
-                const sitouts = [];
+                const singles = [];
                 
                 weekData.forEach(item => {
                     if (item.sitout) {
-                        sitouts.push(item.sitout);
+                        singles.push(item.sitout);
                     } else {
                         const key = [item.a, item.b].sort().join('|');
                         const count = result.pairCounts.get(key) || 0;
@@ -1306,22 +1350,27 @@
                 }
                 html += `</td>`;
                 
-                // Pairings column
-                html += `<td class="pairings-cell">`;
-                pairings.forEach(p => {
-                    const repeatClass = p.count > 1 ? 'repeat' : '';
-                    html += `<span class="pair ${repeatClass}" title="${p.count} time(s)">${p.a} + ${p.b}</span>`;
-                });
-                html += `</td>`;
+                // Group columns - each pair is a group
+                for (let g = 0; g < maxGroups; g++) {
+                    html += `<td class="group-cell">`;
+                    if (g < pairings.length) {
+                        const p = pairings[g];
+                        const repeatClass = p.count > 1 ? ' style="border: 1px solid var(--accent-warning);"' : '';
+                        html += `<span class="group-pair"${repeatClass} title="${p.count} time(s) paired">${p.a} & ${p.b}</span>`;
+                    } else {
+                        html += `<span style="color: var(--text-secondary); font-size: 0.75rem;">—</span>`;
+                    }
+                    html += `</td>`;
+                }
                 
-                // Sitouts column
-                html += `<td class="sitouts-cell">`;
-                sitouts.forEach(s => {
-                    const totalSitouts = result.sitOuts.get(s) || 0;
-                    html += `<span class="sitout" title="Total: ${totalSitouts}">${s}</span>`;
+                // Playing Alone column
+                html += `<td class="singles-cell">`;
+                singles.forEach(s => {
+                    const totalSingles = result.sitOuts.get(s) || 0;
+                    html += `<span class="single" title="Total alone: ${totalSingles}">🏌️ ${s}</span>`;
                 });
-                if (sitouts.length === 0) {
-                    html += `<span style="color: var(--text-secondary); font-size: 0.8rem;">None</span>`;
+                if (singles.length === 0) {
+                    html += `<span style="color: var(--text-secondary); font-size: 0.8rem;">—</span>`;
                 }
                 html += `</td>`;
                 
@@ -1341,54 +1390,54 @@
             html += '</tbody></table>';
             output.innerHTML = html || '<div class="empty-state"><p>No schedule generated</p></div>';
 
-            // Render sitout summary
-            renderSitoutSummary(result);
+            // Render singles summary
+            renderSinglesSummary(result);
 
             // Update stats
             const stats = result.scoreResult.stats;
             document.getElementById('statUnique').textContent = stats.uniquePairs;
-            document.getElementById('statSitouts').textContent = stats.totalSitouts;
+            document.getElementById('statSingles').textContent = stats.totalSitouts;
             document.getElementById('statPreferred').textContent = stats.preferredUsed;
             document.getElementById('statRepeats').textContent = stats.pairRepeats;
             document.getElementById('scoreValue').textContent = result.scoreResult.score;
             document.getElementById('statsSection').style.display = 'block';
         }
 
-        function renderSitoutSummary(result) {
+        function renderSinglesSummary(result) {
             const section = document.getElementById('sitoutSection');
             
-            // Build sitout summary table
-            const sitoutData = [];
+            // Build singles summary table
+            const singlesData = [];
             result.sitOuts.forEach((count, player) => {
                 if (count > 0) {
                     const weeks = result.sitOutWeeks.get(player) || [];
-                    sitoutData.push({ player, count, weeks });
+                    singlesData.push({ player, count, weeks });
                 }
             });
 
-            if (sitoutData.length === 0) {
+            if (singlesData.length === 0) {
                 section.style.display = 'none';
                 return;
             }
 
             // Sort by count descending
-            sitoutData.sort((a, b) => b.count - a.count);
+            singlesData.sort((a, b) => b.count - a.count);
 
             let html = `
-                <div class="sitout-summary">
-                    <h4>🪑 Sit-out Summary</h4>
-                    <table class="sitout-table">
+                <div class="singles-summary">
+                    <h4>🏌️ Playing Alone Summary</h4>
+                    <table class="singles-table">
                         <thead>
                             <tr>
                                 <th>Player</th>
-                                <th>Total</th>
+                                <th>Times Alone</th>
                                 <th>Weeks</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
 
-            sitoutData.forEach(({ player, count, weeks }) => {
+            singlesData.forEach(({ player, count, weeks }) => {
                 let countClass = 'low';
                 if (count >= 3) countClass = 'high';
                 else if (count >= 2) countClass = 'medium';
@@ -1489,7 +1538,7 @@
                 return;
             }
 
-            let csv = 'Week,Week Name,Player1,Player2,Sitout,Aggregate,Tournament\n';
+            let csv = 'Week,Week Name,Player1,Player2,Playing Alone,Aggregate,Tournament\n';
 
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
@@ -1507,7 +1556,7 @@
                 });
             }
 
-            csv += '\nSitout Summary\nPlayer,Total Sitouts,Weeks\n';
+            csv += '\nPlaying Alone Summary\nPlayer,Times Alone,Weeks\n';
             currentSchedule.sitOuts.forEach((count, player) => {
                 if (count > 0) {
                     const weeks = currentSchedule.sitOutWeeks.get(player).join('; ');
@@ -1517,7 +1566,7 @@
 
             csv += '\nStatistics\nMetric,Value\n';
             csv += `Unique Pairings,${currentSchedule.scoreResult.stats.uniquePairs}\n`;
-            csv += `Total Sitouts,${currentSchedule.scoreResult.stats.totalSitouts}\n`;
+            csv += `Times Playing Alone,${currentSchedule.scoreResult.stats.totalSitouts}\n`;
             csv += `Preferred Pairs Used,${currentSchedule.scoreResult.stats.preferredUsed}\n`;
             csv += `Pairing Repeats,${currentSchedule.scoreResult.stats.pairRepeats}\n`;
             csv += `Optimization Score,${currentSchedule.scoreResult.score}\n`;
@@ -1526,7 +1575,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `schedule_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `golf_schedule_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
             URL.revokeObjectURL(url);
         }
