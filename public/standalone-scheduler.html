@@ -16,6 +16,9 @@
             --accent-warning: #f59e0b;
             --accent-danger: #ef4444;
             --accent-tournament: #8b5cf6;
+            --accent-scramble: #06b6d4;
+            --accent-bestball: #ec4899;
+            --accent-off: #64748b;
             --border-color: #475569;
             --radius: 8px;
         }
@@ -32,7 +35,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -56,11 +59,11 @@
 
         .main-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.5fr;
             gap: 28px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .main-grid { grid-template-columns: 1fr; }
         }
 
@@ -135,7 +138,7 @@
             margin-bottom: 12px;
         }
 
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], input[type="date"] {
             flex: 1;
             padding: 12px 14px;
             background: var(--bg-tertiary);
@@ -192,9 +195,10 @@
             text-align: center;
         }
 
+        /* Week config grid - now with more columns */
         .week-config-grid {
             display: grid;
-            grid-template-columns: auto 1fr auto auto;
+            grid-template-columns: auto 100px 1fr auto;
             gap: 8px;
             margin-top: 12px;
             align-items: center;
@@ -217,28 +221,33 @@
             width: 100%;
         }
 
-        .week-chip {
-            padding: 6px 12px;
+        .week-date-input {
+            padding: 6px 8px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            cursor: pointer;
+            color: var(--text-primary);
             font-size: 0.75rem;
-            transition: all 0.2s;
-            text-align: center;
+            width: 100px;
         }
 
-        .week-chip.aggregate {
-            background: rgba(245, 158, 11, 0.2);
-            border-color: var(--accent-warning);
-            color: var(--accent-warning);
+        .week-type-select {
+            padding: 6px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            min-width: 110px;
         }
 
-        .week-chip.tournament {
-            background: rgba(139, 92, 246, 0.2);
-            border-color: var(--accent-tournament);
-            color: var(--accent-tournament);
-        }
+        .week-type-select.regular { border-color: var(--border-color); }
+        .week-type-select.aggregate { border-color: var(--accent-warning); background: rgba(245, 158, 11, 0.1); }
+        .week-type-select.tournament { border-color: var(--accent-tournament); background: rgba(139, 92, 246, 0.1); }
+        .week-type-select.scramble { border-color: var(--accent-scramble); background: rgba(6, 182, 212, 0.1); }
+        .week-type-select.bestball { border-color: var(--accent-bestball); background: rgba(236, 72, 153, 0.1); }
+        .week-type-select.off { border-color: var(--accent-off); background: rgba(100, 116, 139, 0.2); }
 
         .week-label {
             font-size: 0.85rem;
@@ -268,15 +277,12 @@
             font-weight: 500;
         }
 
-        .availability-table th.tournament {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--accent-tournament);
-        }
-
-        .availability-table th.aggregate {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--accent-warning);
-        }
+        .availability-table th.regular { }
+        .availability-table th.aggregate { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        .availability-table th.tournament { background: rgba(139, 92, 246, 0.15); color: var(--accent-tournament); }
+        .availability-table th.scramble { background: rgba(6, 182, 212, 0.15); color: var(--accent-scramble); }
+        .availability-table th.bestball { background: rgba(236, 72, 153, 0.15); color: var(--accent-bestball); }
+        .availability-table th.off { background: rgba(100, 116, 139, 0.2); color: var(--accent-off); }
 
         .availability-table td {
             cursor: pointer;
@@ -288,7 +294,13 @@
             color: var(--accent-primary);
         }
 
-        .availability-table td:hover {
+        .availability-table td.disabled {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .availability-table td:hover:not(.disabled) {
             background: var(--bg-tertiary);
         }
 
@@ -364,24 +376,24 @@
 
         .schedule-output {
             min-height: 300px;
-            max-height: 600px;
             overflow: auto;
             background: var(--bg-tertiary);
             border-radius: 8px;
             margin-bottom: 20px;
         }
 
-        /* Schedule Table Styles */
+        /* Player-column Schedule Table */
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
 
         .schedule-table th,
         .schedule-table td {
-            padding: 12px;
-            text-align: left;
+            padding: 10px 12px;
+            text-align: center;
             border: 1px solid var(--border-color);
         }
 
@@ -393,6 +405,22 @@
             z-index: 10;
         }
 
+        .schedule-table th.week-info-header {
+            text-align: left;
+            min-width: 120px;
+        }
+
+        .schedule-table th.type-header {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            min-width: 40px;
+            padding: 10px 6px;
+        }
+
+        .schedule-table th.player-header {
+            min-width: 80px;
+        }
+
         .schedule-table tr.week-row {
             background: rgba(30, 41, 59, 0.5);
         }
@@ -401,104 +429,110 @@
             background: rgba(30, 41, 59, 0.8);
         }
 
-        .schedule-table tr.week-row.aggregate {
-            border-left: 4px solid var(--accent-warning);
+        .schedule-table tr.week-row.regular { }
+        .schedule-table tr.week-row.aggregate { border-left: 4px solid var(--accent-warning); }
+        .schedule-table tr.week-row.tournament { border-left: 4px solid var(--accent-tournament); }
+        .schedule-table tr.week-row.scramble { border-left: 4px solid var(--accent-scramble); }
+        .schedule-table tr.week-row.bestball { border-left: 4px solid var(--accent-bestball); }
+        .schedule-table tr.week-row.off { border-left: 4px solid var(--accent-off); background: rgba(100, 116, 139, 0.1); }
+
+        .schedule-table .week-info-cell {
+            text-align: left;
+            font-weight: 500;
         }
 
-        .schedule-table tr.week-row.tournament {
-            border-left: 4px solid var(--accent-tournament);
-        }
-
-        .schedule-table .week-cell {
+        .schedule-table .week-info-cell .week-num {
             font-weight: 600;
-            white-space: nowrap;
+            color: var(--text-primary);
         }
 
-        .schedule-table .week-name {
+        .schedule-table .week-info-cell .week-date {
             color: var(--text-secondary);
-            font-size: 0.8rem;
-            font-weight: normal;
+            font-size: 0.7rem;
             display: block;
-            margin-top: 2px;
         }
 
-        .schedule-table .pairings-cell {
+        .schedule-table .week-info-cell .week-course {
             color: var(--accent-primary);
-        }
-
-        .schedule-table .pairings-cell .pair {
-            display: inline-block;
-            padding: 4px 8px;
-            margin: 2px;
-            background: rgba(34, 197, 94, 0.15);
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .schedule-table .pairings-cell .pair.repeat {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--accent-warning);
-        }
-
-        .schedule-table .singles-cell {
-            color: var(--accent-warning);
-        }
-
-        .schedule-table .singles-cell .single {
-            display: inline-block;
-            padding: 4px 8px;
-            margin: 2px;
-            background: rgba(245, 158, 11, 0.15);
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .schedule-table .group-cell {
-            text-align: center;
-            min-width: 140px;
-        }
-
-        .schedule-table .group-cell .group-pair {
+            font-size: 0.75rem;
             display: block;
-            padding: 6px 10px;
-            background: rgba(34, 197, 94, 0.12);
-            border-radius: 6px;
-            font-size: 0.85rem;
+        }
+
+        .schedule-table .type-cell {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 8px 4px;
+        }
+
+        .schedule-table .type-cell.regular { color: var(--text-secondary); }
+        .schedule-table .type-cell.aggregate { color: var(--accent-warning); }
+        .schedule-table .type-cell.tournament { color: var(--accent-tournament); }
+        .schedule-table .type-cell.scramble { color: var(--accent-scramble); }
+        .schedule-table .type-cell.bestball { color: var(--accent-bestball); }
+        .schedule-table .type-cell.off { color: var(--accent-off); }
+
+        .schedule-table .player-cell {
+            font-weight: 500;
+        }
+
+        .schedule-table .player-cell.partner {
             color: var(--accent-primary);
+            background: rgba(34, 197, 94, 0.08);
         }
 
-        .schedule-table .group-cell .single-player {
-            display: block;
-            padding: 6px 10px;
-            background: rgba(245, 158, 11, 0.15);
-            border-radius: 6px;
-            font-size: 0.85rem;
+        .schedule-table .player-cell.alone {
             color: var(--accent-warning);
+            background: rgba(245, 158, 11, 0.08);
             font-style: italic;
         }
 
-        .schedule-table .badges-cell {
-            white-space: nowrap;
+        .schedule-table .player-cell.not-playing {
+            color: var(--text-secondary);
+            background: rgba(100, 116, 139, 0.05);
         }
 
-        .week-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            margin-right: 4px;
+        .schedule-table .player-cell.playing {
+            color: var(--accent-scramble);
+            background: rgba(6, 182, 212, 0.08);
         }
 
-        .week-badge.aggregate {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--accent-warning);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .week-badge.tournament {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--accent-tournament);
+        /* Tournament manual pairing section */
+        .tournament-pairing-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(139, 92, 246, 0.1);
             border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+        }
+
+        .tournament-pairing-section h4 {
+            font-size: 0.9rem;
+            color: var(--accent-tournament);
+            margin-bottom: 12px;
+        }
+
+        .tournament-week-select {
+            margin-bottom: 12px;
+        }
+
+        .manual-pair-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .manual-pair-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .manual-pair-row select {
+            flex: 1;
+            padding: 6px;
+            font-size: 0.8rem;
         }
 
         /* Singles Summary Table */
@@ -538,17 +572,9 @@
             font-weight: 600;
         }
 
-        .singles-table td.count.high {
-            color: var(--accent-danger);
-        }
-
-        .singles-table td.count.medium {
-            color: var(--accent-warning);
-        }
-
-        .singles-table td.count.low {
-            color: var(--accent-primary);
-        }
+        .singles-table td.count.high { color: var(--accent-danger); }
+        .singles-table td.count.medium { color: var(--accent-warning); }
+        .singles-table td.count.low { color: var(--accent-primary); }
 
         .singles-table td.weeks {
             font-size: 0.8rem;
@@ -663,40 +689,37 @@
         }
 
         .scroll-area {
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
             padding-right: 8px;
         }
 
         .legend {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             margin-bottom: 12px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             flex-wrap: wrap;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .legend-dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 3px;
         }
 
-        .legend-dot.aggregate {
-            background: rgba(245, 158, 11, 0.5);
-            border: 1px solid var(--accent-warning);
-        }
-
-        .legend-dot.tournament {
-            background: rgba(139, 92, 246, 0.5);
-            border: 1px solid var(--accent-tournament);
-        }
+        .legend-dot.regular { background: var(--bg-tertiary); border: 1px solid var(--border-color); }
+        .legend-dot.aggregate { background: rgba(245, 158, 11, 0.5); border: 1px solid var(--accent-warning); }
+        .legend-dot.tournament { background: rgba(139, 92, 246, 0.5); border: 1px solid var(--accent-tournament); }
+        .legend-dot.scramble { background: rgba(6, 182, 212, 0.5); border: 1px solid var(--accent-scramble); }
+        .legend-dot.bestball { background: rgba(236, 72, 153, 0.5); border: 1px solid var(--accent-bestball); }
+        .legend-dot.off { background: rgba(100, 116, 139, 0.5); border: 1px solid var(--accent-off); }
     </style>
 </head>
 <body>
@@ -720,7 +743,7 @@
                 <div class="scroll-area">
                     <!-- Players Section -->
                     <div class="section">
-                        <div class="section-title">👥 Players</div>
+                        <div class="section-title">👥 Players (Fixed Order for Season)</div>
                         <div class="input-row">
                             <input type="text" id="newPlayer" placeholder="Enter player name..." onkeypress="if(event.key==='Enter')addPlayer()">
                             <button class="btn btn-primary btn-sm" onclick="addPlayer()">+ Add</button>
@@ -740,21 +763,14 @@
                             </div>
                         </div>
                         <div class="legend" style="margin-top: 12px;">
-                            <div class="legend-item">
-                                <div class="legend-dot aggregate"></div>
-                                <span>Aggregate (scoring)</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-dot tournament"></div>
-                                <span>Tournament</span>
-                            </div>
+                            <div class="legend-item"><div class="legend-dot regular"></div><span>Regular</span></div>
+                            <div class="legend-item"><div class="legend-dot aggregate"></div><span>Aggregate</span></div>
+                            <div class="legend-item"><div class="legend-dot tournament"></div><span>Tournament</span></div>
+                            <div class="legend-item"><div class="legend-dot scramble"></div><span>Scramble</span></div>
+                            <div class="legend-item"><div class="legend-dot bestball"></div><span>Best Ball</span></div>
+                            <div class="legend-item"><div class="legend-dot off"></div><span>Off/Memorial</span></div>
                         </div>
-                        <div class="week-config-grid" id="weekConfigGrid">
-                            <div class="week-config-header">Week</div>
-                            <div class="week-config-header">Place/Name</div>
-                            <div class="week-config-header">Aggr.</div>
-                            <div class="week-config-header">Tourn.</div>
-                        </div>
+                        <div class="week-config-grid" id="weekConfigGrid"></div>
                     </div>
 
                     <div class="separator"></div>
@@ -762,7 +778,7 @@
                     <!-- Availability Section -->
                     <div class="section">
                         <div class="section-title">✓ Availability</div>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">Click cells to toggle availability</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">Click cells to toggle availability (Off/Memorial weeks disabled)</p>
                         <div class="availability-grid">
                             <table class="availability-table" id="availabilityTable"></table>
                         </div>
@@ -770,10 +786,25 @@
 
                     <div class="separator"></div>
 
+                    <!-- Tournament Manual Pairing -->
+                    <div class="section" id="tournamentSection" style="display: none;">
+                        <div class="tournament-pairing-section">
+                            <h4>🏆 Tournament Manual Pairings</h4>
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px;">
+                                Override automatic pairings for tournament weeks only
+                            </p>
+                            <div class="tournament-week-select">
+                                <label style="font-size: 0.8rem;">Select tournament week: </label>
+                                <select id="tournamentWeekSelect" onchange="renderTournamentPairings()"></select>
+                            </div>
+                            <div id="tournamentPairingGrid"></div>
+                        </div>
+                    </div>
+
                     <!-- Pair Preferences Section -->
                     <div class="section">
                         <div class="section-title">💚 Preferred Pairs</div>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px;">Preferred pairs are prioritized on aggregate weeks</p>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px;">Preferred pairs are prioritized on Aggregate events only</p>
                         <div class="input-row">
                             <select id="preferred1"></select>
                             <select id="preferred2"></select>
@@ -829,7 +860,7 @@
                     </div>
                 </div>
 
-                <div id="sitoutSection" style="display: none;"></div>
+                <div id="singlesSection" style="display: none;"></div>
 
                 <div id="statsSection" style="display: none;">
                     <div class="stats-grid">
@@ -860,16 +891,28 @@
     </div>
 
     <script>
+        // Event types
+        const EVENT_TYPES = ['regular', 'aggregate', 'tournament', 'scramble', 'bestball', 'off'];
+        const EVENT_LABELS = {
+            regular: 'Regular',
+            aggregate: 'Aggregate',
+            tournament: 'Tournament',
+            scramble: 'Scramble',
+            bestball: 'Best Ball',
+            off: 'Off/Memorial'
+        };
+
         // State
         let state = {
             players: [],
             weekCount: 6,
-            aggregateWeeks: new Set(),
-            tournamentWeeks: new Set(),
-            weekNames: {},
+            weekTypes: {},        // week -> event type
+            weekDates: {},        // week -> date string
+            weekNames: {},        // week -> course/place name
             availability: {},
             preferredPairs: new Map(),
-            forbiddenPairs: new Set()
+            forbiddenPairs: new Set(),
+            tournamentPairings: {} // week -> array of {a, b} manual pairs
         };
 
         let currentSchedule = null;
@@ -895,7 +938,6 @@
 
         function removePlayer(name) {
             state.players = state.players.filter(p => p !== name);
-            // Clean up availability
             for (let week in state.availability) {
                 state.availability[week] = state.availability[week].filter(p => p !== name);
             }
@@ -906,8 +948,9 @@
 
         function renderPlayers() {
             const container = document.getElementById('playerTags');
-            container.innerHTML = state.players.map(p => `
+            container.innerHTML = state.players.map((p, idx) => `
                 <span class="tag">
+                    <span style="color: var(--text-secondary); font-size: 0.7rem;">${idx + 1}.</span>
                     ${p}
                     <span class="tag-remove" onclick="removePlayer('${p}')">×</span>
                 </span>
@@ -917,49 +960,73 @@
         // Week Management
         function updateWeeks() {
             state.weekCount = parseInt(document.getElementById('weekCount').value) || 6;
-            // Clean aggregate and tournament weeks
-            state.aggregateWeeks = new Set([...state.aggregateWeeks].filter(w => parseInt(w) <= state.weekCount));
-            state.tournamentWeeks = new Set([...state.tournamentWeeks].filter(w => parseInt(w) <= state.weekCount));
-            // Clean week names
-            const newWeekNames = {};
+            
+            // Clean up data beyond week count
+            const cleanedTypes = {};
+            const cleanedDates = {};
+            const cleanedNames = {};
             for (let i = 1; i <= state.weekCount; i++) {
-                if (state.weekNames[String(i)]) {
-                    newWeekNames[String(i)] = state.weekNames[String(i)];
-                }
+                const key = String(i);
+                cleanedTypes[key] = state.weekTypes[key] || 'regular';
+                if (state.weekDates[key]) cleanedDates[key] = state.weekDates[key];
+                if (state.weekNames[key]) cleanedNames[key] = state.weekNames[key];
             }
-            state.weekNames = newWeekNames;
+            state.weekTypes = cleanedTypes;
+            state.weekDates = cleanedDates;
+            state.weekNames = cleanedNames;
             
             renderWeekConfig();
             updateAvailabilityGrid();
+            updateTournamentSection();
         }
 
         function renderWeekConfig() {
             const container = document.getElementById('weekConfigGrid');
             let html = `
                 <div class="week-config-header">Week</div>
-                <div class="week-config-header">Place/Name</div>
-                <div class="week-config-header">Aggr.</div>
-                <div class="week-config-header">Tourn.</div>
+                <div class="week-config-header">Date</div>
+                <div class="week-config-header">Course/Place</div>
+                <div class="week-config-header">Type</div>
             `;
             
             for (let i = 1; i <= state.weekCount; i++) {
                 const weekKey = String(i);
-                const isAggregate = state.aggregateWeeks.has(weekKey);
-                const isTournament = state.tournamentWeeks.has(weekKey);
+                const weekType = state.weekTypes[weekKey] || 'regular';
+                const weekDate = state.weekDates[weekKey] || '';
                 const weekName = state.weekNames[weekKey] || '';
                 
                 html += `
                     <span class="week-label">Week ${i}</span>
+                    <input type="date" class="week-date-input" value="${weekDate}" 
+                        onchange="updateWeekDate('${weekKey}', this.value)">
                     <input type="text" class="week-name-input" value="${weekName}" 
                         placeholder="e.g., Pine Valley" 
                         onchange="updateWeekName('${weekKey}', this.value)">
-                    <span class="week-chip ${isAggregate ? 'aggregate' : ''}" 
-                        onclick="toggleAggregate(${i})">⭐</span>
-                    <span class="week-chip ${isTournament ? 'tournament' : ''}" 
-                        onclick="toggleTournament(${i})">🏆</span>
+                    <select class="week-type-select ${weekType}" onchange="updateWeekType('${weekKey}', this.value)">
+                        ${EVENT_TYPES.map(t => `<option value="${t}" ${weekType === t ? 'selected' : ''}>${EVENT_LABELS[t]}</option>`).join('')}
+                    </select>
                 `;
             }
             container.innerHTML = html;
+        }
+
+        function updateWeekType(week, type) {
+            state.weekTypes[week] = type;
+            // Update the select styling
+            const selects = document.querySelectorAll('.week-type-select');
+            selects.forEach(sel => {
+                sel.className = 'week-type-select ' + sel.value;
+            });
+            updateAvailabilityGrid();
+            updateTournamentSection();
+        }
+
+        function updateWeekDate(week, date) {
+            if (date) {
+                state.weekDates[week] = date;
+            } else {
+                delete state.weekDates[week];
+            }
         }
 
         function updateWeekName(week, name) {
@@ -970,49 +1037,101 @@
             }
         }
 
-        function toggleAggregate(week) {
-            const key = String(week);
-            if (state.aggregateWeeks.has(key)) {
-                state.aggregateWeeks.delete(key);
-            } else {
-                state.aggregateWeeks.add(key);
+        // Tournament Section
+        function updateTournamentSection() {
+            const tournamentWeeks = [];
+            for (let i = 1; i <= state.weekCount; i++) {
+                const key = String(i);
+                if (state.weekTypes[key] === 'tournament') {
+                    tournamentWeeks.push(key);
+                }
             }
-            renderWeekConfig();
-            updateAvailabilityGrid();
+
+            const section = document.getElementById('tournamentSection');
+            if (tournamentWeeks.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            const select = document.getElementById('tournamentWeekSelect');
+            select.innerHTML = tournamentWeeks.map(w => {
+                const name = state.weekNames[w];
+                const label = name ? `Week ${w} (${name})` : `Week ${w}`;
+                return `<option value="${w}">${label}</option>`;
+            }).join('');
+
+            renderTournamentPairings();
         }
 
-        function toggleTournament(week) {
-            const key = String(week);
-            if (state.tournamentWeeks.has(key)) {
-                state.tournamentWeeks.delete(key);
-            } else {
-                state.tournamentWeeks.add(key);
+        function renderTournamentPairings() {
+            const week = document.getElementById('tournamentWeekSelect').value;
+            if (!week) return;
+
+            const available = state.availability[week] || [];
+            const grid = document.getElementById('tournamentPairingGrid');
+
+            if (available.length < 2) {
+                grid.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary);">Set player availability for this week first</p>';
+                return;
             }
-            renderWeekConfig();
-            updateAvailabilityGrid();
+
+            // Initialize tournament pairings for this week if not exists
+            if (!state.tournamentPairings[week]) {
+                state.tournamentPairings[week] = [];
+            }
+
+            const numPairs = Math.floor(available.length / 2);
+            let html = '<div class="manual-pair-grid">';
+
+            for (let p = 0; p < numPairs; p++) {
+                const existingPair = state.tournamentPairings[week][p] || {};
+                html += `
+                    <div class="manual-pair-row">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Pair ${p + 1}:</span>
+                        <select onchange="updateTournamentPair('${week}', ${p}, 'a', this.value)">
+                            <option value="">Select</option>
+                            ${available.map(pl => `<option value="${pl}" ${existingPair.a === pl ? 'selected' : ''}>${pl}</option>`).join('')}
+                        </select>
+                        <span>+</span>
+                        <select onchange="updateTournamentPair('${week}', ${p}, 'b', this.value)">
+                            <option value="">Select</option>
+                            ${available.map(pl => `<option value="${pl}" ${existingPair.b === pl ? 'selected' : ''}>${pl}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            grid.innerHTML = html;
+        }
+
+        function updateTournamentPair(week, pairIndex, side, player) {
+            if (!state.tournamentPairings[week]) {
+                state.tournamentPairings[week] = [];
+            }
+            if (!state.tournamentPairings[week][pairIndex]) {
+                state.tournamentPairings[week][pairIndex] = {};
+            }
+            state.tournamentPairings[week][pairIndex][side] = player;
         }
 
         // Availability Grid
         function updateAvailabilityGrid() {
             const table = document.getElementById('availabilityTable');
+            
             if (state.players.length === 0) {
-                table.innerHTML = '<tr><td style="padding: 20px; color: var(--text-secondary);">Add players first</td></tr>';
+                table.innerHTML = '<tr><td style="padding: 20px; color: var(--text-secondary);">Add players to see availability grid</td></tr>';
                 return;
             }
 
             let html = '<tr><th>Player</th>';
             for (let i = 1; i <= state.weekCount; i++) {
                 const weekKey = String(i);
-                const isAggregate = state.aggregateWeeks.has(weekKey);
-                const isTournament = state.tournamentWeeks.has(weekKey);
-                let thClass = '';
-                if (isTournament) thClass = 'tournament';
-                else if (isAggregate) thClass = 'aggregate';
-                
+                const weekType = state.weekTypes[weekKey] || 'regular';
                 const weekName = state.weekNames[weekKey];
-                const label = weekName ? `W${i}` : `W${i}`;
                 const title = weekName ? `Week ${i}: ${weekName}` : `Week ${i}`;
-                html += `<th class="${thClass}" title="${title}">${label}</th>`;
+                html += `<th class="${weekType}" title="${title}">W${i}</th>`;
             }
             html += '</tr>';
 
@@ -1020,8 +1139,15 @@
                 html += `<tr><td style="text-align: left; font-weight: 500;">${player}</td>`;
                 for (let i = 1; i <= state.weekCount; i++) {
                     const week = String(i);
+                    const weekType = state.weekTypes[week] || 'regular';
+                    const isOff = weekType === 'off';
                     const isAvailable = state.availability[week]?.includes(player);
-                    html += `<td class="${isAvailable ? 'available' : ''}" onclick="toggleAvailability('${player}', '${week}')">${isAvailable ? '✓' : ''}</td>`;
+                    
+                    if (isOff) {
+                        html += `<td class="disabled">—</td>`;
+                    } else {
+                        html += `<td class="${isAvailable ? 'available' : ''}" onclick="toggleAvailability('${player}', '${week}')">${isAvailable ? '✓' : ''}</td>`;
+                    }
                 }
                 html += '</tr>';
             });
@@ -1030,6 +1156,9 @@
         }
 
         function toggleAvailability(player, week) {
+            const weekType = state.weekTypes[week] || 'regular';
+            if (weekType === 'off') return; // Can't toggle Off weeks
+
             if (!state.availability[week]) {
                 state.availability[week] = [];
             }
@@ -1040,6 +1169,7 @@
                 state.availability[week].push(player);
             }
             updateAvailabilityGrid();
+            renderTournamentPairings();
         }
 
         // Player Selects for Pairs
@@ -1121,7 +1251,7 @@
             const schedule = {};
             const pairCounts = new Map();
             const sitOuts = new Map();
-            const sitOutWeeks = new Map(); // Track which weeks each player sits out
+            const sitOutWeeks = new Map();
 
             state.players.forEach(p => {
                 sitOuts.set(p, 0);
@@ -1130,10 +1260,51 @@
 
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
-                const available = [...(state.availability[week] || [])];
-                if (available.length === 0) continue;
+                const weekType = state.weekTypes[week] || 'regular';
 
-                const isAggregateWeek = state.aggregateWeeks.has(week);
+                // Off/Memorial weeks: no pairings
+                if (weekType === 'off') {
+                    schedule[week] = [];
+                    continue;
+                }
+
+                const available = [...(state.availability[week] || [])];
+                if (available.length === 0) {
+                    schedule[week] = [];
+                    continue;
+                }
+
+                // Tournament weeks: use manual pairings if available
+                if (weekType === 'tournament' && state.tournamentPairings[week]) {
+                    const manualPairs = state.tournamentPairings[week].filter(p => p.a && p.b && p.a !== p.b);
+                    if (manualPairs.length > 0) {
+                        const pairings = [];
+                        const paired = new Set();
+
+                        manualPairs.forEach(pair => {
+                            if (available.includes(pair.a) && available.includes(pair.b)) {
+                                pairings.push({ a: pair.a, b: pair.b });
+                                paired.add(pair.a);
+                                paired.add(pair.b);
+                                const key = [pair.a, pair.b].sort().join('|');
+                                pairCounts.set(key, (pairCounts.get(key) || 0) + 1);
+                            }
+                        });
+
+                        // Remaining unpaired players play alone
+                        available.filter(p => !paired.has(p)).forEach(p => {
+                            pairings.push({ sitout: p });
+                            sitOuts.set(p, (sitOuts.get(p) || 0) + 1);
+                            sitOutWeeks.get(p).push(w);
+                        });
+
+                        schedule[week] = pairings;
+                        continue;
+                    }
+                }
+
+                // Normal auto-pairing logic
+                const isAggregateWeek = weekType === 'aggregate';
                 const pairings = [];
                 const shuffled = [...available].sort(() => Math.random() - 0.5);
                 const paired = new Set();
@@ -1157,10 +1328,10 @@
 
                         if (count === 0) score += 10;
 
-                        // Preferred pairs get MUCH higher priority on aggregate weeks
+                        // Preferred pairs ONLY on aggregate weeks
                         const limit = state.preferredPairs.get(key);
-                        if (limit && count < limit) {
-                            score += isAggregateWeek ? 25 : 5; // Higher bonus on aggregate weeks
+                        if (limit && count < limit && isAggregateWeek) {
+                            score += 25;
                         }
 
                         if (count > 0) score -= count * 3;
@@ -1247,7 +1418,7 @@
             document.getElementById('loading').style.display = 'block';
             document.getElementById('scheduleOutput').innerHTML = '';
             document.getElementById('statsSection').style.display = 'none';
-            document.getElementById('sitoutSection').style.display = 'none';
+            document.getElementById('singlesSection').style.display = 'none';
 
             let bestSchedule = null;
             let bestScore = -Infinity;
@@ -1277,38 +1448,84 @@
             document.getElementById('loading').style.display = 'none';
         }
 
-        function renderSchedule(result) {
-            const output = document.getElementById('scheduleOutput');
-            
-            // Calculate max groups per week for column headers
-            let maxGroups = 0;
+        // Build player-to-partner map for each week
+        function buildPlayerMap(result) {
+            const playerMap = {}; // week -> player -> value
+
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
+                const weekType = state.weekTypes[week] || 'regular';
                 const weekData = result.schedule[week] || [];
-                const pairCount = weekData.filter(item => !item.sitout).length;
-                const singleCount = weekData.filter(item => item.sitout).length;
-                // Singles can join a group, so total groups = pairs + ceil(singles/2) or singles alone
-                maxGroups = Math.max(maxGroups, pairCount + singleCount);
+                
+                playerMap[week] = {};
+
+                // Off weeks: everyone is NOT PLAYING
+                if (weekType === 'off') {
+                    state.players.forEach(p => {
+                        playerMap[week][p] = 'NOT PLAYING';
+                    });
+                    continue;
+                }
+
+                // Scramble/Best Ball: everyone available is PLAYING
+                if (weekType === 'scramble' || weekType === 'bestball') {
+                    const available = state.availability[week] || [];
+                    state.players.forEach(p => {
+                        if (available.includes(p)) {
+                            playerMap[week][p] = 'PLAYING';
+                        } else {
+                            playerMap[week][p] = 'NOT PLAYING';
+                        }
+                    });
+                    continue;
+                }
+
+                // Regular/Aggregate/Tournament: show partner or ALONE or NOT PLAYING
+                const available = state.availability[week] || [];
+                
+                // Initialize all as NOT PLAYING
+                state.players.forEach(p => {
+                    if (available.includes(p)) {
+                        playerMap[week][p] = 'ALONE'; // Default if available but unpaired
+                    } else {
+                        playerMap[week][p] = 'NOT PLAYING';
+                    }
+                });
+
+                // Process pairings
+                weekData.forEach(item => {
+                    if (item.sitout) {
+                        playerMap[week][item.sitout] = 'ALONE';
+                    } else if (item.a && item.b) {
+                        // Mirrored: A shows B, B shows A
+                        playerMap[week][item.a] = item.b;
+                        playerMap[week][item.b] = item.a;
+                    }
+                });
             }
-            // Minimum 2 groups for display
-            maxGroups = Math.max(maxGroups, 2);
-            
-            // Build golf-standard table output
+
+            return playerMap;
+        }
+
+        function renderSchedule(result) {
+            const output = document.getElementById('scheduleOutput');
+            const playerMap = buildPlayerMap(result);
+
+            // Build player-column table
             let html = `
                 <table class="schedule-table">
                     <thead>
                         <tr>
-                            <th>Week</th>
+                            <th class="week-info-header">Week / Date / Course</th>
+                            <th class="type-header">Type</th>
             `;
-            
-            // Add group columns (golf foursome style)
-            for (let g = 1; g <= maxGroups; g++) {
-                html += `<th class="group-cell">Group ${g}</th>`;
-            }
-            
+
+            // Player column headers (fixed order)
+            state.players.forEach((p, idx) => {
+                html += `<th class="player-header">${p}</th>`;
+            });
+
             html += `
-                            <th>Playing Alone</th>
-                            <th>Type</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1316,79 +1533,50 @@
 
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
-                const weekData = result.schedule[week];
-                if (!weekData) continue;
+                const weekType = state.weekTypes[week] || 'regular';
+                const weekDate = state.weekDates[week] || '';
+                const weekName = state.weekNames[week] || '';
 
-                const isAggregate = state.aggregateWeeks.has(week);
-                const isTournament = state.tournamentWeeks.has(week);
-                const weekName = state.weekNames[week];
-                
-                let rowClass = 'week-row';
-                if (isTournament) rowClass += ' tournament';
-                else if (isAggregate) rowClass += ' aggregate';
+                html += `<tr class="week-row ${weekType}">`;
 
-                // Collect pairings and singles
-                const pairings = [];
-                const singles = [];
-                
-                weekData.forEach(item => {
-                    if (item.sitout) {
-                        singles.push(item.sitout);
-                    } else {
-                        const key = [item.a, item.b].sort().join('|');
-                        const count = result.pairCounts.get(key) || 0;
-                        pairings.push({ a: item.a, b: item.b, count });
-                    }
-                });
-
-                html += `<tr class="${rowClass}">`;
-                
-                // Week column
-                html += `<td class="week-cell">Week ${w}`;
+                // Week info cell (stacked: week number, date, course)
+                html += `<td class="week-info-cell">`;
+                html += `<span class="week-num">Week ${w}</span>`;
+                if (weekDate) {
+                    const dateFormatted = new Date(weekDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    html += `<span class="week-date">${dateFormatted}</span>`;
+                }
                 if (weekName) {
-                    html += `<span class="week-name">${weekName}</span>`;
+                    html += `<span class="week-course">${weekName}</span>`;
                 }
                 html += `</td>`;
-                
-                // Group columns - each pair is a group
-                for (let g = 0; g < maxGroups; g++) {
-                    html += `<td class="group-cell">`;
-                    if (g < pairings.length) {
-                        const p = pairings[g];
-                        const repeatClass = p.count > 1 ? ' style="border: 1px solid var(--accent-warning);"' : '';
-                        html += `<span class="group-pair"${repeatClass} title="${p.count} time(s) paired">${p.a} & ${p.b}</span>`;
+
+                // Type cell (vertical text)
+                html += `<td class="type-cell ${weekType}">${EVENT_LABELS[weekType]}</td>`;
+
+                // Player cells
+                state.players.forEach(player => {
+                    const value = playerMap[week][player] || 'NOT PLAYING';
+                    let cellClass = 'player-cell';
+                    
+                    if (value === 'NOT PLAYING') {
+                        cellClass += ' not-playing';
+                    } else if (value === 'ALONE') {
+                        cellClass += ' alone';
+                    } else if (value === 'PLAYING') {
+                        cellClass += ' playing';
                     } else {
-                        html += `<span style="color: var(--text-secondary); font-size: 0.75rem;">—</span>`;
+                        cellClass += ' partner';
                     }
-                    html += `</td>`;
-                }
-                
-                // Playing Alone column
-                html += `<td class="singles-cell">`;
-                singles.forEach(s => {
-                    const totalSingles = result.sitOuts.get(s) || 0;
-                    html += `<span class="single" title="Total alone: ${totalSingles}">🏌️ ${s}</span>`;
+
+                    html += `<td class="${cellClass}">${value}</td>`;
                 });
-                if (singles.length === 0) {
-                    html += `<span style="color: var(--text-secondary); font-size: 0.8rem;">—</span>`;
-                }
-                html += `</td>`;
-                
-                // Type badges column
-                html += `<td class="badges-cell">`;
-                if (isTournament) {
-                    html += `<span class="week-badge tournament">🏆 Tournament</span>`;
-                }
-                if (isAggregate) {
-                    html += `<span class="week-badge aggregate">⭐ Aggregate</span>`;
-                }
-                html += `</td>`;
-                
+
                 html += `</tr>`;
             }
 
             html += '</tbody></table>';
-            output.innerHTML = html || '<div class="empty-state"><p>No schedule generated</p></div>';
+            output.innerHTML = html;
 
             // Render singles summary
             renderSinglesSummary(result);
@@ -1404,9 +1592,8 @@
         }
 
         function renderSinglesSummary(result) {
-            const section = document.getElementById('sitoutSection');
+            const section = document.getElementById('singlesSection');
             
-            // Build singles summary table
             const singlesData = [];
             result.sitOuts.forEach((count, player) => {
                 if (count > 0) {
@@ -1420,7 +1607,6 @@
                 return;
             }
 
-            // Sort by count descending
             singlesData.sort((a, b) => b.count - a.count);
 
             let html = `
@@ -1463,36 +1649,65 @@
 
         // Load Example
         function loadExample() {
-            state.players = ['Scott', 'Mark', 'GaryS', 'Greg', 'Ken', 'Bob'];
-            state.weekCount = 6;
-            state.aggregateWeeks = new Set(['2', '4', '6']);
-            state.tournamentWeeks = new Set(['4']);
+            state.players = ['Scott', 'Mark', 'GaryS', 'Greg', 'Ken', 'Bob', 'Chris', 'Dave'];
+            state.weekCount = 8;
+            state.weekTypes = {
+                '1': 'regular',
+                '2': 'aggregate',
+                '3': 'scramble',
+                '4': 'tournament',
+                '5': 'regular',
+                '6': 'bestball',
+                '7': 'off',
+                '8': 'aggregate'
+            };
+            state.weekDates = {
+                '1': '2025-03-01',
+                '2': '2025-03-08',
+                '3': '2025-03-15',
+                '4': '2025-03-22',
+                '5': '2025-03-29',
+                '6': '2025-04-05',
+                '7': '2025-04-12',
+                '8': '2025-04-19'
+            };
             state.weekNames = {
                 '1': 'Pine Valley',
                 '2': 'Augusta',
                 '3': 'Pebble Beach',
                 '4': 'St Andrews',
                 '5': 'Sawgrass',
-                '6': 'Royal Troon'
+                '6': 'Royal Troon',
+                '7': 'Memorial Day',
+                '8': 'Pinehurst'
             };
             state.availability = {
-                '1': ['Scott', 'Mark', 'GaryS', 'Greg', 'Bob'],
-                '2': ['Scott', 'Mark', 'Ken', 'Bob'],
-                '3': ['Scott', 'GaryS', 'Ken', 'Bob'],
-                '4': ['Scott', 'Mark', 'Greg', 'Ken'],
-                '5': ['Scott', 'Mark', 'GaryS', 'Ken', 'Bob'],
-                '6': ['GaryS', 'Greg', 'Ken', 'Bob']
+                '1': ['Scott', 'Mark', 'GaryS', 'Greg', 'Bob', 'Chris'],
+                '2': ['Scott', 'Mark', 'Ken', 'Bob', 'Dave'],
+                '3': ['Scott', 'GaryS', 'Ken', 'Bob', 'Chris', 'Dave'],
+                '4': ['Scott', 'Mark', 'Greg', 'Ken', 'Chris', 'Dave'],
+                '5': ['Scott', 'Mark', 'GaryS', 'Ken', 'Bob', 'Chris'],
+                '6': ['GaryS', 'Greg', 'Ken', 'Bob', 'Dave', 'Chris'],
+                '8': ['Scott', 'Mark', 'GaryS', 'Greg', 'Ken', 'Bob']
             };
             state.preferredPairs = new Map([['Mark|Scott', 2], ['GaryS|Greg', 3]]);
             state.forbiddenPairs = new Set(['Greg|Scott']);
+            state.tournamentPairings = {
+                '4': [
+                    { a: 'Scott', b: 'Mark' },
+                    { a: 'Greg', b: 'Ken' },
+                    { a: 'Chris', b: 'Dave' }
+                ]
+            };
 
-            document.getElementById('weekCount').value = 6;
+            document.getElementById('weekCount').value = 8;
             renderPlayers();
             renderWeekConfig();
             updateAvailabilityGrid();
             updatePlayerSelects();
             renderPreferredPairs();
             renderForbiddenPairs();
+            updateTournamentSection();
         }
 
         // Clear All
@@ -1500,12 +1715,13 @@
             state = {
                 players: [],
                 weekCount: 6,
-                aggregateWeeks: new Set(),
-                tournamentWeeks: new Set(),
+                weekTypes: {},
+                weekDates: {},
                 weekNames: {},
                 availability: {},
                 preferredPairs: new Map(),
-                forbiddenPairs: new Set()
+                forbiddenPairs: new Set(),
+                tournamentPairings: {}
             };
             currentSchedule = null;
 
@@ -1516,9 +1732,10 @@
             updatePlayerSelects();
             renderPreferredPairs();
             renderForbiddenPairs();
+            updateTournamentSection();
             document.getElementById('scheduleOutput').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><p>Configure players and weeks, then click Generate Schedule</p></div>';
             document.getElementById('statsSection').style.display = 'none';
-            document.getElementById('sitoutSection').style.display = 'none';
+            document.getElementById('singlesSection').style.display = 'none';
         }
 
         // Copy Output
@@ -1531,36 +1748,44 @@
             navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
         }
 
-        // Export CSV
+        // Export CSV - Player column format
         function exportCSV() {
             if (!currentSchedule) {
                 alert('Generate a schedule first');
                 return;
             }
 
-            let csv = 'Week,Week Name,Player1,Player2,Playing Alone,Aggregate,Tournament\n';
+            const playerMap = buildPlayerMap(currentSchedule);
 
+            // Header row
+            let csv = 'Week,Date,Course,Type';
+            state.players.forEach(p => {
+                csv += `,"${p}"`;
+            });
+            csv += '\n';
+
+            // Data rows
             for (let w = 1; w <= state.weekCount; w++) {
                 const week = String(w);
-                const weekData = currentSchedule.schedule[week] || [];
+                const weekType = state.weekTypes[week] || 'regular';
+                const weekDate = state.weekDates[week] || '';
                 const weekName = state.weekNames[week] || '';
-                const isAggregate = state.aggregateWeeks.has(week) ? 'Yes' : 'No';
-                const isTournament = state.tournamentWeeks.has(week) ? 'Yes' : 'No';
-                
-                weekData.forEach(item => {
-                    if (item.sitout) {
-                        csv += `${week},"${weekName}",,${item.sitout},Yes,${isAggregate},${isTournament}\n`;
-                    } else {
-                        csv += `${week},"${weekName}",${item.a},${item.b},No,${isAggregate},${isTournament}\n`;
-                    }
+
+                csv += `${w},"${weekDate}","${weekName}","${EVENT_LABELS[weekType]}"`;
+
+                state.players.forEach(p => {
+                    const value = playerMap[week][p] || 'NOT PLAYING';
+                    csv += `,"${value}"`;
                 });
+
+                csv += '\n';
             }
 
             csv += '\nPlaying Alone Summary\nPlayer,Times Alone,Weeks\n';
             currentSchedule.sitOuts.forEach((count, player) => {
                 if (count > 0) {
                     const weeks = currentSchedule.sitOutWeeks.get(player).join('; ');
-                    csv += `${player},${count},"${weeks}"\n`;
+                    csv += `"${player}",${count},"${weeks}"\n`;
                 }
             });
 
